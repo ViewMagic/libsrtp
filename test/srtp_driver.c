@@ -1101,7 +1101,7 @@ srtp_err_status_t srtp_test(const srtp_policy_t *policy,
     uint32_t tag_length;
     uint32_t ssrc;
     srtp_policy_t *rcvr_policy;
-    srtp_policy_t tmp_policy;
+    srtp_policy_t tmp_policy = {0};
     int header = 1;
     int use_mki = 0;
 
