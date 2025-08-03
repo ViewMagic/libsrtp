@@ -32,6 +32,7 @@ include(CheckFunctionExists)
 include(CheckTypeSize)
 include(CheckCSourceCompiles)
 include(ConfigSafeGuards)
+include(GNUInstallDirs)
 
 if(ENABLE_WARNINGS)
     include(Warnings)
@@ -298,14 +299,24 @@ if(WIN32)
   target_compile_definitions(srtp2 PUBLIC _CRT_SECURE_NO_WARNINGS)
 endif()
 
-install(TARGETS srtp2 DESTINATION lib
-  EXPORT libSRTPTargets
-)
+install(TARGETS srtp2
+  EXPORT libSRTPTargets)
 
-install(FILES include/srtp.h crypto/include/auth.h
+install(TARGETS srtp2
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+
+install(FILES
+  include/srtp.h
+  crypto/include/auth.h
   crypto/include/cipher.h
   crypto/include/crypto_types.h
-  DESTINATION include/srtp2)
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/srtp2)
+
+install(FILES LICENSE
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/libsrtp"
+  RENAME copyright)
 
 if(LIBSRTP_TEST_APPS)
   enable_testing()
@@ -476,12 +487,10 @@ if(LIBSRTP_TEST_APPS)
 endif()
 
 # Export targets
-install(
-  EXPORT libSRTPTargets
+install(EXPORT libSRTPTargets
   FILE libSRTPTargets.cmake
 	NAMESPACE libSRTP::
-	DESTINATION lib/cmake/libSRTP
-)
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/libSRTP")
 
 #--------------------------------------------------------------------
 # Create generated files
@@ -489,19 +498,16 @@ install(
 include(CMakePackageConfigHelpers)
 
 # Generate the config file that is includes the exports
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/libSRTPConfig.cmake"
-  INSTALL_DESTINATION "${CONFIG_FILE_DIR}"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/libSRTP"
   NO_SET_AND_CHECK_MACRO
-  NO_CHECK_REQUIRED_COMPONENTS_MACRO
-)
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 # Generate the version file for the config file
-write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/libSRTPConfigVersion.cmake"
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/libSRTPConfigVersion.cmake"
   VERSION "${PROJECT_VERSION}"
-  COMPATIBILITY AnyNewerVersion
-)
+  COMPATIBILITY AnyNewerVersion)
 
 #--------------------------------------------------------------------
 # Install CMake config files
@@ -509,5 +515,4 @@ write_basic_package_version_file(
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/libSRTPConfig.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/libSRTPConfigVersion.cmake
-  DESTINATION lib/cmake/libSRTP
-)
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/libSRTP")
